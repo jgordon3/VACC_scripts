@@ -1,0 +1,8 @@
+# strip headers from fastq file
+grep @HWI > header.txt
+# count barcodes in 10th column (:) seperator
+awk '{count[$10]++}END{for(j in count) print j, count[j]}' FS=: headers.txt
+
+
+# find regex and print the 4 lines after match 
+awk '/:CCGTCC/ {c=3;{print}next}c-->0' inputfile

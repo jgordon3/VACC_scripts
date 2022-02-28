@@ -1,0 +1,59 @@
+<tool id="bedToBigBed" name="BED to bigBED" version="0.1">
+	<description></description>
+	<inputs>
+		<param format="bed" name="input" type="data" label="BED file" />
+
+		<param name="Genome" type="select" label="which genome">
+      	<option value="hg38">hg38</option>
+      	<option value="hg19">hg19</option>
+      	<option value="mm10">mm10</option>
+      	<option value="mm9">mm9r</option>
+    	</param>
+    	<param name="bed_type" type="select" label="bed type">
+      <option value="bed6 (Simple bed)">-type=bed6</option>
+      <option value="bed6+4 (narrowpeak)">-type=bed6+4</option>
+    </param>
+	</inputs>
+
+	<!-- template for future unit-tests (i'm not sure it's good to do unit-tests with binary output files...)
+	<tests>
+		<test>
+			<param name="input" value="bedtobigbed1.bed" />
+			<param name="blocksize" value="0"/>
+			<param name="itemsPerSlot" value="0"/>
+			<param name="bedFields" value="0"/>
+			<output name="output" file="bedtobigbed1.bb" />
+		</test>
+	</tests>
+	-->
+
+	<outputs>
+		<data format="bigbed" name="output"  metadata_source="input" label="$input.tag (BigBed)" />
+	</outputs>
+	<help>
+**What it does**
+
+This tool converts BED file into a bigBed binary format. 
+
+.. class:: infomark
+
+bigBed format is useful for uploading large datasets into the UCSC Genome Browser.
+
+.. class:: warningmark
+
+The input BED file **must** be sorted by chromosome,start
+
+
+------
+
+From `bigBed Track format`__ page:
+
+ .. __: http://genome.ucsc.edu/goldenPath/help/bigBed.html
+
+The bigBed format stores annotation items that can either be simple, or a linked collection of exons, much as BED files do. BigBed files are created initially from BED type files, using the program bedToBigBed. The resulting bigBed files are in an indexed binary format. The main advantage of the bigBed files is that only the portions of the files needed to display a particular region are transferred to UCSC, so for large data sets bigBed is considerably faster than regular BED files. The bigBed file remains on your web accessible server (http, https, or ftp), not on the UCSC server. Only the portion that is needed for the chromosomal position you are currently viewing is locally cached as a "sparse file".
+
+<!-- Is this accurate? -->
+**bedToBigBed** was written by Jim Kent, more information available at http://genomewiki.ucsc.edu/index.php/Main_Page
+
+</help>
+</tool>

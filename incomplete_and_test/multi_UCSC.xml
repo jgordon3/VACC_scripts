@@ -1,0 +1,27 @@
+#output multiple bigwigs to UCSC
+<tool id="mutliUCSCexport" name="export bigWig(Bed) to UCSC" version="0.0.1">
+    <description>export_to_UCSC</description>
+    <command interpreter="bash">
+        multi_UCSC.sh
+        $out_file1
+        $input1
+        #for $q in $queries
+            ${q.input2}
+        #end for
+    </command>
+    <inputs>
+        <param name="input1" type="data" label="bigWig/bigBed"/>
+        <repeat name="queries" title="Additional tracks">
+            <param name="input2" type="data" label="Select" />
+        </repeat>
+    </inputs>
+    <outputs>
+        #control file
+        <data format="text" name="out_file1" format="input" metadata_source="input1"/>
+        #html output with hyperlink
+        <data format="text" name="output" type="data" label="Link to UCSC tracks"/>
+    </outputs>
+    <help>
+
+    </help>
+</tool>

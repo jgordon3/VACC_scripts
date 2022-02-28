@@ -1,0 +1,83 @@
+#!/bin/bash
+#PBS -l nodes=1:ppn=1,pmem=14gb,pvmem=15gb
+#PBS -l walltime=30:00:00
+#PBS -N FASTX
+#PBS -j oe
+#PBS -M Jonathan.A.Gordon@uvm.edu
+#PBS -m bea
+
+#WARNING
+# This script includes all elements needed to run the TOPHAT/CUFFLINKS programs as a pipeline
+# However it probably will not complete (run out of memory and/or walltime)
+# It is best to run in series and comment out parts as needed
+
+# don't change this unless absolutely needed
+DATE=`date +%m_%d_%Y`
+WD=$HOME/scratch/$PBS_JOBNAME"_"$DATE
+if [ -d "$WD" ]
+then
+cd $WD
+else
+mkdir $WD
+cd $WD
+fi
+
+
+
+#----------FILES_TO_PROCESS-----------------------
+PARENTFOLDER=/users/j/a/jargordo/scratch/sequences/RNA_R2_08_15_2013
+
+AA=HWR2D0_CTTGTA_L006
+BB=HWR2D7_AGTCAA_L006
+CC=HWR2D14_AGTTCC_L006
+DD=HWR2D21_ATGTCA_L006
+
+EE=JGR2D0_CGATGT_L006
+FF=JGR2D7_TGACCA_L006
+GG=JGR2D14_ACAGTG_L006
+HH=JGR2D21_GCCAAT_L006
+II=JGR2D28_CAGATC_L006
+
+# START OF LOOP FOR INDIVIDUAL REPLICATES/CONDITIONS
+#for sample in $II; do
+#for sample in $AA $BB $CC $DD $EE $FF $GG $HH $II; do
+
+#-----------DEFINE INPUTS/OUTPUTS___________
+TESTF="$PARENTFOLDER/$sample""_R1_000.fastq"
+TESTR="$PARENTFOLDER/$sample""_R2_000.fastq"
+ABRV_NAME=$(echo "$sample" | awk -F '_' '{print $1}')
+CUFFOUT="$WD/$ABRV_NAME/$ABRV_NAME""_cuffout"
+CUFFIN="$WD/$ABRV_NAME/""accepted_hits.bam"
+
+#echo "$ABRV_NAME---------TOPHAT-----------------------------------"
+#tophat -G $GENES -o $ABRV_NAME $GENOME $TESTF $TESTR
+
+#echo "$ABRV_NAME-------CUFFLINKS-----------------------------------"
+#cd $WD/$ABRV_NAME/
+#cufflinks -G $GENES -o $CUFFOUT $CUFFIN
+#cd $WD
+
+#echo "$CUFFOUT""/transcripts.gtf" >> assemblies.txt
+#done
+# END OF LOOP
+
+echo "-------------CUFFMERGE-----------------------------------"
+#cuffmerge -g $GENES -s $GENOMEFA assemblies.txt
+
+#COMPARE RELICATES/CONDITIONS
+CDOUT="cuffdiff_out"
+CDLABELS="D0,D7,D14,D21"
+CDMERGE="$WD/merged_asm/merged.gtf"
+
+echo "---------CUFFDIFF-----------------------------------"
+cuffdiff -o $CDOUT -b $GENOMEFA -L $CDLABELS -u $CDMERGE \
+./HWR1D0/accepted_hits.bam,./JGR1D0/accepted_hits.bam,./HWR2D0/accepted_hits.bam,./JGR2D0/accepted_hits.bam \
+./HWR1D7/accepted_hits.bam,./JGR1D7/accepted_hits.bam,./HWR2D7/accepted_hits.bam,./JGR2D7/accepted_hits.bam \
+./HWR1D14/accepted_hits.bam,./JGR1D14/accepted_hits.bam,./HWR2D14/accepted_hits.bam,./JGR2D14/accepted_hits.bam \
+./HWR1D21/accepted_hits.bam,./JGR1D21/accepted_hits.bam,./HWR2D21/accepted_hits.bam,./JGR2D21/accepted_hits.bam
+
+echo "------------------------RUN_INFO----------------------------------"
+echo "This is job ran on " `hostname` "on" `date +%d_%m_%Y_%H:%M:%S`
+
+#Command to connect VACC to COMIS (you run this from vacc)
+#smbclient \\\\med23.med.uvm.edu\\Steinlab-Research$ --user=med\\yourID

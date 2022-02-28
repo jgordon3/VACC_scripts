@@ -1,0 +1,36 @@
+<tool id="homer_pos2bed" name="homer_pos2bed" version="1.0.0">
+    <requirements>
+        <requirement type="package" version="4.1" >homer</requirement>
+    </requirements>
+    <description></description>
+    <!--<version_command></version_command>-->
+    <command>
+        pos2bed.pl $input_peak 1&gt; $out_bed
+        2&gt; $out_log || echo "Error running pos2bed." >&amp;2
+    </command>
+    <inputs>
+        <param format="tabular" name="input_peak" type="data" label="Homer peak positions" />
+    </inputs>
+    <outputs>
+        <!--<data format="html" name="html_outfile" label="index" />-->
+        <!--<data format="html" hidden="True" name="html_outfile" label="index.html" />-->
+        <data format="bed" name="out_bed" label="${tool.name} on #echo os.path.splitext(str($input_peak.name))[0]#.bed" />
+        <data format="txt" name="out_log" label="${tool.name} on #echo os.path.splitext(str($input_peak.name))[0]#.log" />
+    </outputs>
+    <tests>
+        <test>
+            <!--<param name="input_file" value="extract_genomic_dna.fa" />-->
+            <!--<output name="html_file" file="sample_output.html" ftype="html" />-->
+        </test>
+    </tests>
+    
+    <help>
+        .. class:: infomark
+        
+        Converts: homer peak positions -(to)-> BED format
+        
+        **Homer pos2bed.pl**
+        
+        http://biowhat.ucsd.edu/homer/ngs/miscellaneous.html
+    </help>
+</tool>

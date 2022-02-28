@@ -1,0 +1,3 @@
+/usr/local/bin/configureBclToFastq.pl --input-dir /slipstream/galaxy/uploads/AGTC@med.uvm.edu/150211_SNL128_0082_AC60AVACXX/Data/Intensities/BaseCalls/ --output-dir ./Unaligned_Lane5 --sample-sheet ./Sample_sheet_150211_SNL128_0082_AC60AVACXX_Lane_5_Tye.csv --no-eamss
+
+nohup make -j 8 > out.txt 2> err.txt &

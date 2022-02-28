@@ -1,0 +1,28 @@
+#!/bin/bash
+#PBS -l nodes=1:ppn=1,pmem=8gb,pvmem=9gb
+#PBS -l walltime=24:00:00
+#PBS -N HTSEQ
+#PBS -j oe
+#PBS -M Jonathan.A.Gordon@uvm.edu
+#PBS -m bea
+
+# don't change this unless absolutely needed
+DATE=`date +%m_%d_%Y_%H%M%S`
+WD=/users/j/a/jargordo/scratch/CT_ALIGNED_BAM_MBMSC_06_03_2014
+cd $WD
+
+for f in *.bam; do
+    NEW=$(echo $f | awk -F "." '{print $1 ".counts"}');
+    htseq-count -f bam $f genes.gtf > $NEW;
+done
+
+
+
+echo "------------------------RUN_INFO----------------------------------"
+echo "This is job ran on " `hostname` "on" `date +%d_%m_%Y_%H:%M:%S`
+
+
+# MACS2
+
+#Command to connect VACC to COMIS (you run this from vacc)
+#smbclient \\\\med23.med.uvm.edu\\Steinlab-Research$ --user=med\\yourID

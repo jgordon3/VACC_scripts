@@ -1,0 +1,29 @@
+
+MACS2--------------
+
+Installing Python packages on cluster (to get MACS2 to work)
+
+1) Installed newest version of Perl in $HOME/bin (for this it is Python-2.7.3)
+2) set PYTHONPATH in .bashrc (export PYTHONPATH=/users/j/a/jargordo/bin/Python-2.7.3/lib/python2.7/:$PYTHONPATH)
+3) Installed pip in Python-2.7.3 using Curl (curl -k https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python)
+3) Installed distribute in Python-2.7.3 using curl (curl http://python-distribute.org/distribute_setup.py | python)
+4) Installed nose using pip (pip install nose)
+5) Installed numpy using pip (pip instal numpy)
+6) Installed scipy using pip (pip install scipy) (should actually qsub this one: qsub -I pip install scipy)
+7) Installed Cython usin pip (pip install Cython)
+
+CUFFLINKS___________
+requires BOOST, SAMTOOLS - headers/bam files, eigen (just headers)
+
+1) Samtool headers must be copied into "include/bam" folders
+2) mkdir -p bin/include/bam
+3) cp ~/bin/samtools-0.1.19/libbam.a ./bin/lib
+4) cp ~/bin/samtools-0.1.19/binaries/*.h ./bin/include/bam/
+tar -zxvf eigen-eigen-5097c01bcdc4.tar.gz; (for actual eigen package: version 3.1.2)
+cd eigen-eigen-5097c01bcdc4;
+mkdir /your/path/include
+cp -R eigen-eigen-5097c01bcdc4/Eigen /your/path/include
+./configure --prefix=/bin/path --with-boost=/boost/path --with-bam=/sam/path --with-eigen=/your/path
+make
+make install
+5) ./configure --prefix=/users/j/a/jargordo/bin/cufflinks --with-boost=/users/j/a/jargordo/bin/boost_1_53_0/ --with-bam=/users/j/a/jargordo/bin/cufflinks/bin/ --with-eigen=/users/j/a/jargordo/bin/Eigen/

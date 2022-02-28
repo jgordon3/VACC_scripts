@@ -37,14 +37,13 @@ exit 1;
 ####################### Flag / Options      #############################
 #########################################################################
 
-while getopts "F:c:G:t:u:q:R:h:" opt; do
+while getopts "F:c:G:t:u:R:h:" opt; do
     case $opt in
         F) FASTQ=$OPTARG;;
         c) COMPRESS=$OPTARG;;
         G) GENOME=$OPTARG;;
         t) FILTER=$OPTARG;;
         u) NAME=$OPTARG;;
-        q) FASTQC=$OPTARG;;
         R) RECIPE=$OPTARG;;
         h) usage;;
         :) usage;;
@@ -69,7 +68,7 @@ ABRV_NAME=${FASTQ%.fastq}
 # GENOME ASSIGNMENT
 if [ $GENOME == "hg38" ]; then INDEX=/slipstream/galaxy/data/hg38/hg38canon/bowtie2_index/hg38canon
         elif [ $GENOME == "hg19" ]; then INDEX=/slipstream/galaxy/data/hg19/hg19canon/bowtie2_index
-        elif [ $GENOME == "mm10" ]; then INDEX=/slipstream/galaxy/data/mm10/bowtie2_index_canon
+        elif [ $GENOME == "mm10" ]; then INDEX=/slipstream/galaxy/data/mm10/bowtie2_index_canon/mm10canon
         elif [ $GENOME == "mm9" ]; then INDEX=/slipstream/galaxy/data/mm9/bowtie2_index_canon
 else echo "could not find specified index"; usage;
 fi

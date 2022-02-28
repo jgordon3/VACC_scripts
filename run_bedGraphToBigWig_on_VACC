@@ -1,0 +1,87 @@
+#!/bin/bash
+#PBS -l nodes=1:ppn=1,pmem=8gb,pvmem=9gb
+#PBS -l walltime=24:00:00
+#PBS -N BGTBW
+#PBS -j oe
+#PBS -M Jonathan.A.Gordon@uvm.edu
+#PBS -m bea
+
+# don't change this unless absolutely needed
+DATE=`date +%m_%d_%Y_%H%M%S`
+if [ -d "$WD" ]; then cd $WD; else WD=$HOME/scratch/$PBS_JOBNAME"_"$DATE; mkdir $WD; cd $WD; fi
+
+#---------SET_CHROM_FOR_WIGTOBIGWIG---------
+if [ -z $SPECIES ]; then SPECIES="mm10"; echo "GENOME HAS BEEN SET TO $SPECIES BY DEFAULT"; else echo "GENOME WAS SET TO $SPECIES"; fi
+#Set variables
+if [ $SPECIES = "mm10" ]; then FULLSPECIES="Mus_musculus"; BUILD="GRCm38";
+    elif [ $SPECIES = "hg19" ]; then FULLSPECIES="Homo_sapiens"; BUILD="build37.2";
+    else echo "REFERENCE: $REFERENCE COULD NOT BE SET";
+fi
+if [ -z $REFERENCE ]; then $REFERENCE="UCSC"; echo "REFERENCE HAS BEEN SET TO $REFERENCE BY DEFAULT"; else echo "REFERENCE WAS SET TO $REFERENCE"; fi
+if [ $REFERENCE = "UCSC" ]; then
+    echo "----Aligned to iGenomes UCSC $FULLSPECIES  $SPECIES----"
+    GENES=/users/j/a/jargordo/scratch/indexes/$FULLSPECIES/UCSC/$SPECIES/Annotation/Genes/genes.gtf
+    GENOME=/users/j/a/jargordo/scratch/indexes/$FULLSPECIES/UCSC/$SPECIES/Sequence/Bowtie2Index/genome
+    GENOMEFA=/users/j/a/jargordo/scratch/indexes/$FULLSPECIES/UCSC/$SPECIES/Sequence/Bowtie2Index/genome.fa
+    CHROMSIZE=/users/j/a/jargordo/scratch/indexes/$FULLSPECIES/UCSC/$SPECIES/Annotation/Genes/ChromInfo.txt
+elif [ $REFERENCE = "NCBI" ]; then
+    echo "----Aligned to iGenomes $FULLSPECIES  $SPECIES GRCm38-----"
+    GENES=/users/j/a/jargordo/scratch/indexes/$FULLSPECIES/NCBI/$BUILD/Annotation/Genes/genes.gtf
+    GENOME=/users/j/a/jargordo/scratch/indexes/$FULLSPECIES/NCBI/$BUILD/Sequence/Bowtie2Index/genome
+    GENOMEFA=/users/j/a/jargordo/scratch/indexes/$FULLSPECIES/NCBI/$BUILD/Sequence/WholeGenomeFasta/genome.fa
+    CHROMSIZE=/users/j/a/jargordo/scratch/indexes/$FULLSPECIES/NCBI/$BUILD/GenomeStudio/$FULLSPECIES/NCBI-$BUILD/ChromInfo.txt
+else echo "REFERENCE: $REFERENCE COULD NOT BE SET"
+fi
+#Use LIBTYPE TO SPLIT plus and minus stand if needed
+if [-z $LIBTYPE ]; then LIBTYPE="fr-unstranded"; else echo "Library type was set to: $LIBTYPE"; fi
+
+#----------FILES_TO_PROCESS-----------------------
+#checks for input
+if [ -z $INPUT ]; then echo "INPUT was not set"; else echo "Input: $INPUT"; fi
+if [[ ${INPUT: -3} == ".gz" ]]; then gunzip $INPUT; INPUT=$(echo "$INPUT" | awk -F '.gz' '{print $1}'); echo "INPUT was gzipped, now it is not"; else echo "INPUT is not gzipped"; fi
+
+FILE=$(echo $INPUT | awk -F '/' '{print $NF}')
+CHECKFILE=$(echo "$FILE" | awk -F '.' '{print $2}')
+ABRV_NAME=$(echo "$FILE" | awk -F '.' '{print $1}')
+CLIPPED="$PBS_JOBID"".clipped";
+SORTED="$PBS_JOBID"".sorted";
+OUTPUT_NAME="$ABRV_NAME""_.bw";
+SBAM="$ABRV_NAME.sorted.bam"
+#if [ $REFERENCE = "NCBI" ]; then #add "Chr" to bam file
+
+if [ "$CHECKFILE" = ".bedgraph" ]; then
+    bedClip -verbose=2 $INPUT $CHROMSIZE $CLIPPED
+    bedGraphToBigWig $CLIPPED $CHROMSIZE $OUTPUT_NAME
+    rm $CLIPPED
+else
+    samtools sort $INPUT $SBAM
+    bedtools genomecov -ibam -bg -i $SBAM -g $CHROMSIZE > $SORTED
+    bedClip -verbose=2 $SORTED $CHROMSIZE $CLIPPED
+    bedGraphToBigWig $CLIPPED $CHROMSIZE $OUTPUT_NAME
+fi
+
+rm clipped.bedgraph sorted_hits.bedgraph
+if [ -d BIGWIGS ]; then echo ""; else mkdir BIGWIGS; fi
+mv $FINAL BIGWIGS/
+
+
+
+
+#if [ "$LIBTYPE" = "fr-secondstrand" ]; then
+#bamToBed -i accepted_hits.bam -split > accepted_hits.bed
+#awk '{if($6=="+") print}' accepted_hits.bed | sort -k1,1 | bedItemOverlapCount mm9 -chromSize=$CHROMSIZE stdin | sort -k1,1 -k2,2n > accepted_hits.plus.bedGraph
+#awk '{if($6=="-") print}' accepted_hits.bed | sort -k1,1 | bedItemOverlapCount mm9 -chromSize=$CHROMSIZE stdin | sort -k1,1 -k2,2n | awk '{OFS="\t"; print $1,$2,$3,"-"$4}' > accepted_hits.minus.bedGraph
+#bedGraphToBigWig accepted_hits.plus.bedGraph $CHROMSIZE accepted_hits.plus.bw
+#bedGraphToBigWig accepted_hits.minus.bedGraph $CHROMSIZE accepted_hits.minus.bw
+echo "------------------------RUN_INFO----------------------------------"
+echo "This is job ran on " `hostname` "on" `date +%d_%m_%Y_%H:%M:%S`
+
+
+# MACS2
+
+#Command to connect VACC to COMIS (you run this from vacc)
+#smbclient \\\\med23.med.uvm.edu\\Steinlab-Research$ --user=med\\yourID
+# 3. Create BedGraph coverage file
+#genomeCoverageBed -bg -ibam sample.sorted.bam -g chromsizes.txt > sample.bedgraph
+# 4. Convert the BedGraph file to BigWig
+#bedGraphToBigWig sample.bedgraph chromsizes.txt sample.bw
